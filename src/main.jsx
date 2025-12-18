@@ -21,8 +21,8 @@ const routerVariables = createBrowserRouter([{
     element: <App/>,
     children: [
         {
-        path: "/",
-        element: <Login />,
+        index: true,
+        element: <Home />,
       },
         {
         path: "/login",
@@ -174,6 +174,18 @@ const routerVariables = createBrowserRouter([{
       },
       {
         path :"/rooms",
+        element:<Rooms/>
+      },
+      {
+        path :"/rooms/icu-details",
+        element:<Rooms/>
+      },
+      {
+        path :"/rooms/emergency-ward",
+        element:<Rooms/>
+      },
+      {
+        path :"/rooms/general-ward",
         element:<Rooms/>
       }
     ]

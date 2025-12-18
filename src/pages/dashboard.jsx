@@ -8,9 +8,7 @@ const Dashboard = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     
-    if (!user) {
-        return <Navigate to="/login" replace />;
-    }
+    // Removed redirect to login - allow access to dashboard
 
     useEffect(() => {
         fetchData();
@@ -100,7 +98,8 @@ const Dashboard = () => {
                 pharmacyBills: savedPharmacyBills ? JSON.parse(savedPharmacyBills) : [],
                 labTests: savedLabTests ? JSON.parse(savedLabTests) : [],
                 labOrders: savedLabOrders ? JSON.parse(savedLabOrders) : [],
-                surgeries: savedSurgeries ? JSON.parse(savedSurgeries) : defaultSurgeries
+                surgeries: savedSurgeries ? JSON.parse(savedSurgeries) : defaultSurgeries,
+                rooms: localStorage.getItem('hospitalRooms') ? JSON.parse(localStorage.getItem('hospitalRooms')) : jsonData.rooms || []
             };
             
             setData(updatedData);
@@ -149,9 +148,12 @@ const Dashboard = () => {
     const emergencyCases = data?.emergencies?.length || 0;
     const criticalEmergencies = data?.emergencies?.filter(e => e.severity === 'Critical')?.length || 0;
     const totalRooms = data?.rooms?.length || 0;
-    const occupiedRooms = data?.rooms?.filter(r => r.occupied)?.length || 0;
-    const availableRooms = data?.rooms?.filter(r => !r.occupied)?.length || 0;
-    const icuBeds = data?.rooms?.filter(r => r.type === "ICU" && !r.occupied)?.length || 0;
+    const occupiedRooms = data?.rooms?.filter(r => r.occupied || r.status === 'Occupied')?.length || 0;
+    const availableRooms = data?.rooms?.filter(r => !r.occupied || r.status === 'Available')?.length || 0;
+    const icuBeds = data?.rooms?.filter(r => (r.type === "ICU" || r.type === "icu") && (!r.occupied || r.status === 'Available'))?.length || 0;
+    const emergencyRooms = data?.rooms?.filter(r => r.type === "Emergency")?.length || 0;
+    const generalRooms = data?.rooms?.filter(r => r.type === "General")?.length || 0;
+    const roomRevenue = data?.rooms?.filter(r => r.occupied || r.status === 'Occupied').reduce((sum, room) => sum + (room.dailyRate || 0), 0) || 0;
     const totalStaff = data?.staff?.length || 0;
     const staffSalary = data?.staff?.reduce((sum, emp) => sum + (emp.salary || 0), 0) || 0;
     const totalLabTests = data?.labTests?.length || 0;
@@ -160,7 +162,7 @@ const Dashboard = () => {
     const completedLabTests = data?.labOrders?.filter(o => o.status === 'Completed')?.length || 0;
     const pendingLabTests = data?.labOrders?.filter(o => o.status === 'Pending' || o.status === 'Ordered')?.length || 0;
     const labRevenue = data?.labOrders?.filter(o => o.status === 'Completed').reduce((sum, order) => sum + order.totalAmount, 0) || 0;
-    const totalRevenue = appointmentRevenue + consultationRevenue + billingRevenue + pharmacyRevenue + labRevenue + surgeryRevenue;
+    const totalRevenue = appointmentRevenue + consultationRevenue + billingRevenue + pharmacyRevenue + labRevenue + surgeryRevenue + roomRevenue;
 
     return (
         <div className="dashboard">
@@ -209,8 +211,9 @@ const Dashboard = () => {
                     <h3>Rooms & Beds</h3>
                     <span className="kpi-number">{totalRooms}</span>
                     <div className="kpi-details">
-                        <small>Occupied: {occupiedRooms} | Available: {availableRooms}</small>
-                        <small>ICU Available: {icuBeds}</small>
+                        <small>Occupied: {occupiedRooms} | Available: {availableRooms} | Maintenance: {data?.rooms?.filter(r => r.status === 'Maintenance')?.length || 0}</small>
+                        <small>ICU: {data?.rooms?.filter(r => r.type === 'ICU')?.length || 0} | Emergency: {emergencyRooms} | General: {generalRooms}</small>
+                        <small>Private: {data?.rooms?.filter(r => r.type === 'Private')?.length || 0} | Maternity: {data?.rooms?.filter(r => r.type === 'Maternity')?.length || 0} | Pediatric: {data?.rooms?.filter(r => r.type === 'Pediatric')?.length || 0}</small>
                     </div>
                 </div>
                 <div className="kpi-card">
@@ -239,10 +242,11 @@ const Dashboard = () => {
                 </div>
                 <div className="kpi-card alert">
                     <h3>Alerts & Emergencies</h3>
-                    <span className="kpi-number">{emergencyCases + lowStockMedicines}</span>
+                    <span className="kpi-number">{emergencyCases + lowStockMedicines + (data?.rooms?.filter(r => r.status === 'Maintenance')?.length || 0)}</span>
                     <div className="kpi-details">
-                        <small>Critical Emergencies: {criticalEmergencies}</small>
-                        <small>Low Stock Alerts: {lowStockMedicines}</small>
+                        <small>Critical Patients: {data?.rooms?.filter(r => r.condition && r.condition.toLowerCase().includes('critical'))?.length || 0}</small>
+                        <small>Low Stock: {lowStockMedicines} | Maintenance: {data?.rooms?.filter(r => r.status === 'Maintenance')?.length || 0}</small>
+                        <small>Fever Cases: {data?.rooms?.filter(r => r.condition && r.condition.toLowerCase().includes('fever'))?.length || 0} | Accidents: {data?.rooms?.filter(r => r.condition && r.condition.toLowerCase().includes('accident'))?.length || 0}</small>
                     </div>
                 </div>
             </div>
@@ -340,6 +344,72 @@ const Dashboard = () => {
                             </div>
                         </div>
                     </div>
+
+                    <div className="chart-container">
+                        <h3>Hospital Performance Metrics</h3>
+                        <div className="performance-metrics">
+                            <div className="metric-row">
+                                <div className="metric-item">
+                                    <span className="metric-label">Patient Satisfaction</span>
+                                    <div className="metric-bar">
+                                        <div className="metric-fill" style={{width: '92%'}}></div>
+                                    </div>
+                                    <span className="metric-value">92%</span>
+                                </div>
+                            </div>
+                            <div className="metric-row">
+                                <div className="metric-item">
+                                    <span className="metric-label">Bed Occupancy Rate</span>
+                                    <div className="metric-bar">
+                                        <div className="metric-fill" style={{width: `${totalRooms > 0 ? (occupiedRooms/totalRooms)*100 : 0}%`}}></div>
+                                    </div>
+                                    <span className="metric-value">{totalRooms > 0 ? Math.round((occupiedRooms/totalRooms)*100) : 0}%</span>
+                                </div>
+                            </div>
+                            <div className="metric-row">
+                                <div className="metric-item">
+                                    <span className="metric-label">Staff Efficiency</span>
+                                    <div className="metric-bar">
+                                        <div className="metric-fill" style={{width: '88%'}}></div>
+                                    </div>
+                                    <span className="metric-value">88%</span>
+                                </div>
+                            </div>
+                            <div className="metric-row">
+                                <div className="metric-item">
+                                    <span className="metric-label">Equipment Uptime</span>
+                                    <div className="metric-bar">
+                                        <div className="metric-fill" style={{width: '95%'}}></div>
+                                    </div>
+                                    <span className="metric-value">95%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="chart-container">
+                        <h3>Room Status Overview</h3>
+                        <div className="system-overview">
+                            <div className="overview-item">
+                                <span className="overview-label">ICU Available</span>
+                                <span className="overview-value">{data?.rooms?.filter(r => r.type === 'ICU' && r.status === 'Available')?.length || 0}</span>
+                            </div>
+                            <div className="overview-item">
+                                <span className="overview-label">Emergency Available</span>
+                                <span className="overview-value">{data?.rooms?.filter(r => r.type === 'Emergency' && r.status === 'Available')?.length || 0}</span>
+                            </div>
+                            <div className="overview-item">
+                                <span className="overview-label">General Available</span>
+                                <span className="overview-value">{data?.rooms?.filter(r => r.type === 'General' && r.status === 'Available')?.length || 0}</span>
+                            </div>
+                            <div className="overview-item">
+                                <span className="overview-label">Rooms in Maintenance</span>
+                                <span className="overview-value">{data?.rooms?.filter(r => r.status === 'Maintenance')?.length || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+
+
                 </div>
 
                 <div className="right-section">
@@ -398,7 +468,15 @@ const Dashboard = () => {
                             </div>
                             <div className="overview-item">
                                 <span className="overview-label">ICU Available</span>
-                                <span className="overview-value">{icuBeds}</span>
+                                <span className="overview-value">{data?.rooms?.filter(r => r.type === 'ICU' && r.status === 'Available')?.length || 0}</span>
+                            </div>
+                            <div className="overview-item">
+                                <span className="overview-label">Emergency Available</span>
+                                <span className="overview-value">{data?.rooms?.filter(r => r.type === 'Emergency' && r.status === 'Available')?.length || 0}</span>
+                            </div>
+                            <div className="overview-item">
+                                <span className="overview-label">Critical Patients</span>
+                                <span className="overview-value">{data?.rooms?.filter(r => r.condition && r.condition.toLowerCase().includes('critical'))?.length || 0}</span>
                             </div>
                         </div>
                     </div>
@@ -430,16 +508,14 @@ const Dashboard = () => {
                                 <span className="revenue-label">Surgeries</span>
                                 <span className="revenue-amount">₹{surgeryRevenue.toLocaleString()}</span>
                             </div>
+                            <div className="revenue-item">
+                                <span className="revenue-label">Room Revenue</span>
+                                <span className="revenue-amount">₹{roomRevenue.toLocaleString()}</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="alert-container">
-                        <h3>ICU Beds Available</h3>
-                        <div className="bed-status">
-                            <span className="bed-number">{icuBeds}</span>
-                            <span>Available</span>
-                        </div>
-                    </div>
+
 
                     <div className="alert-container">
                         <h3>Today's Surgeries</h3>
