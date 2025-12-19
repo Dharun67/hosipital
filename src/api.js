@@ -1,5 +1,5 @@
 // Simple API connection - just add this file
-const API_URL = 'http://localhost:8000/api/v1';
+const API_URL = 'https://hospitalmanagement-902b.onrender.com/';
 
 // Get doctors from backend
 export function getDoctors() {
