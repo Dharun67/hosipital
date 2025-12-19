@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = 'https://hospitalmanagement-902b.onrender.com/';
 
 const apiCall = async (endpoint, options = {}) => {
   try {
