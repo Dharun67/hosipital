@@ -60,7 +60,7 @@ const Laboratory = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/hospital.json');
+      const response = await fetch('https://hospitalmanagement-902b.onrender.com/api/v1/hospital/');
       const data = await response.json();
       
       const savedTests = localStorage.getItem('labTests');

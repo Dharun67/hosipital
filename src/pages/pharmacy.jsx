@@ -42,7 +42,7 @@ const Pharmacy = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/hospital.json');
+      const response = await fetch('https://hospitalmanagement-902b.onrender.com/api/v1/pharmacy/');
       const data = await response.json();
       
       const savedMedicines = localStorage.getItem('hospitalMedicines');

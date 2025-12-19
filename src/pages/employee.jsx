@@ -73,7 +73,7 @@ const Employee = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/hospital.json');
+      const response = await fetch('https://hospitalmanagement-902b.onrender.com/api/v1/staff/');
       const data = await response.json();
       
       const savedStaff = localStorage.getItem('hospitalStaff');

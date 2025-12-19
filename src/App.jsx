@@ -32,7 +32,7 @@ function App() {
     
     const fetchData = async () => {
       try {
-          const response = await fetch("http://localhost:5173/hospital.json");
+          const response = await fetch("https://hospitalmanagement-902b.onrender.com/api/v1/hospital/");
           const da = await response.json();
           setData(da);
           console.log(da);
