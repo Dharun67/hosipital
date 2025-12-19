@@ -30,11 +30,19 @@ const OnlineConsultation = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('https://hospitalmanagement-902b.onrender.com/api/v1/hospital/');
-      const data = await response.json();
-      setOnlineConsultations(data.onlineConsultations || []);
-      setDoctors(data.doctors);
-      setPatients(data.patients);
+      const [doctorsRes, patientsRes] = await Promise.all([
+        fetch('https://hospitalmanagement-902b.onrender.com/api/v1/doctors/'),
+        fetch('https://hospitalmanagement-902b.onrender.com/api/v1/patients/')
+      ]);
+      
+      const [doctorsData, patientsData] = await Promise.all([
+        doctorsRes.json(),
+        patientsRes.json()
+      ]);
+      
+      setOnlineConsultations([]);
+      setDoctors(doctorsData.data || []);
+      setPatients(patientsData.data || []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);

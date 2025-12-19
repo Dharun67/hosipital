@@ -4,7 +4,8 @@ const API_URL = 'https://hospitalmanagement-902b.onrender.com/api/v1';
 // Get doctors from backend
 export function getDoctors() {
   return fetch(`${API_URL}/doctors/`)
-    .then(response => response.json());
+    .then(response => response.json())
+    .then(data => data.data || []);
 }
 
 // Add new doctor to database
@@ -19,7 +20,8 @@ export function addDoctor(doctor) {
 // Get patients from backend
 export function getPatients() {
   return fetch(`${API_URL}/patients/`)
-    .then(response => response.json());
+    .then(response => response.json())
+    .then(data => data.data || []);
 }
 
 // Add new patient to database
@@ -34,7 +36,8 @@ export function addPatient(patient) {
 // Get appointments from backend
 export function getAppointments() {
   return fetch(`${API_URL}/appointments/`)
-    .then(response => response.json());
+    .then(response => response.json())
+    .then(data => data.data || []);
 }
 
 // Add new appointment to database
@@ -44,4 +47,25 @@ export function addAppointment(appointment) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(appointment)
   }).then(response => response.json());
+}
+
+// Get pharmacy data
+export function getPharmacy() {
+  return fetch(`${API_URL}/pharmacy/`)
+    .then(response => response.json())
+    .then(data => data.data || []);
+}
+
+// Get rooms data
+export function getRooms() {
+  return fetch(`${API_URL}/rooms/`)
+    .then(response => response.json())
+    .then(data => data.data || []);
+}
+
+// Get staff data
+export function getStaff() {
+  return fetch(`${API_URL}/staff/`)
+    .then(response => response.json())
+    .then(data => data.data || []);
 }

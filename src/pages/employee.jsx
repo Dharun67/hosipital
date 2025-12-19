@@ -74,10 +74,10 @@ const Employee = () => {
   const fetchData = async () => {
     try {
       const response = await fetch('https://hospitalmanagement-902b.onrender.com/api/v1/staff/');
-      const data = await response.json();
+      const result = await response.json();
       
       const savedStaff = localStorage.getItem('hospitalStaff');
-      setStaff(savedStaff ? JSON.parse(savedStaff) : data.staff);
+      setStaff(savedStaff ? JSON.parse(savedStaff) : (result.data || []));
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);

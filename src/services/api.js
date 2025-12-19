@@ -22,7 +22,7 @@ const apiCall = async (endpoint, options = {}) => {
 };
 
 export const doctorsAPI = {
-  getAll: () => apiCall('/doctors/'),
+  getAll: () => apiCall('/doctors/').then(data => data.data || []),
   create: (doctor) => apiCall('/doctors/doctor', {
     method: 'POST',
     body: JSON.stringify(doctor),
@@ -37,7 +37,7 @@ export const doctorsAPI = {
 };
 
 export const patientsAPI = {
-  getAll: () => apiCall('/patients/'),
+  getAll: () => apiCall('/patients/').then(data => data.data || []),
   create: (patient) => apiCall('/patients/patient', {
     method: 'POST',
     body: JSON.stringify(patient),
@@ -52,7 +52,7 @@ export const patientsAPI = {
 };
 
 export const appointmentsAPI = {
-  getAll: () => apiCall('/appointments/'),
+  getAll: () => apiCall('/appointments/').then(data => data.data || []),
   create: (appointment) => apiCall('/appointments/appointment', {
     method: 'POST',
     body: JSON.stringify(appointment),
@@ -67,7 +67,7 @@ export const appointmentsAPI = {
 };
 
 export const pharmacyAPI = {
-  getAll: () => apiCall('/pharmacy/'),
+  getAll: () => apiCall('/pharmacy/').then(data => data.data || []),
   create: (medicine) => apiCall('/pharmacy/medicine', {
     method: 'POST',
     body: JSON.stringify(medicine),
@@ -82,7 +82,7 @@ export const pharmacyAPI = {
 };
 
 export const roomsAPI = {
-  getAll: () => apiCall('/rooms/'),
+  getAll: () => apiCall('/rooms/').then(data => data.data || []),
   create: (room) => apiCall('/rooms/room', {
     method: 'POST',
     body: JSON.stringify(room),
@@ -97,7 +97,7 @@ export const roomsAPI = {
 };
 
 export const staffAPI = {
-  getAll: () => apiCall('/staff/'),
+  getAll: () => apiCall('/staff/').then(data => data.data || []),
   create: (staff) => apiCall('/staff/staff', {
     method: 'POST',
     body: JSON.stringify(staff),

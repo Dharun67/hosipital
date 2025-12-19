@@ -57,9 +57,9 @@ const Doctors = () => {
   const fetchData = async () => {
     try {
       const [doctorsRes, appointmentsRes, patientsRes] = await Promise.all([
-        fetch('http://localhost:8000/api/v1/doctors/'),
-        fetch('http://localhost:8000/api/v1/appointments/'),
-        fetch('http://localhost:8000/api/v1/patients/')
+        fetch('https://hospitalmanagement-902b.onrender.com/api/v1/doctors/'),
+        fetch('https://hospitalmanagement-902b.onrender.com/api/v1/appointments/'),
+        fetch('https://hospitalmanagement-902b.onrender.com/api/v1/patients/')
       ]);
       
       const doctorsData = await doctorsRes.json();
@@ -86,7 +86,7 @@ const Doctors = () => {
   const handleAddDoctor = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/api/v1/doctors/doctor', {
+      const response = await fetch('https://hospitalmanagement-902b.onrender.com/api/v1/doctors/doctor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(doctorData)

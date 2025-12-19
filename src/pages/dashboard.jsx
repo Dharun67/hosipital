@@ -17,12 +17,12 @@ const Dashboard = () => {
     const fetchData = async () => {
         try {
             const [patientsRes, doctorsRes, appointmentsRes, staffRes, pharmacyRes, roomsRes] = await Promise.all([
-                fetch('http://localhost:8000/api/v1/patients/'),
-                fetch('http://localhost:8000/api/v1/doctors/'),
-                fetch('http://localhost:8000/api/v1/appointments/'),
-                fetch('http://localhost:8000/api/v1/staff/'),
-                fetch('http://localhost:8000/api/v1/pharmacy/'),
-                fetch('http://localhost:8000/api/v1/rooms/')
+                fetch('https://hospitalmanagement-902b.onrender.com/api/v1/patients/'),
+                fetch('https://hospitalmanagement-902b.onrender.com/api/v1/doctors/'),
+                fetch('https://hospitalmanagement-902b.onrender.com/api/v1/appointments/'),
+                fetch('https://hospitalmanagement-902b.onrender.com/api/v1/staff/'),
+                fetch('https://hospitalmanagement-902b.onrender.com/api/v1/pharmacy/'),
+                fetch('https://hospitalmanagement-902b.onrender.com/api/v1/rooms/')
             ]);
             
             const patientsData = await patientsRes.json();

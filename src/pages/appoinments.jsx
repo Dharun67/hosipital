@@ -50,9 +50,9 @@ const Appointments = () => {
   const fetchData = async () => {
     try {
       const [appointmentsRes, doctorsRes, patientsRes] = await Promise.all([
-        fetch('http://localhost:8000/api/v1/appointments/'),
-        fetch('http://localhost:8000/api/v1/doctors/'),
-        fetch('http://localhost:8000/api/v1/patients/')
+        fetch('https://hospitalmanagement-902b.onrender.com/api/v1/appointments/'),
+        fetch('https://hospitalmanagement-902b.onrender.com/api/v1/doctors/'),
+        fetch('https://hospitalmanagement-902b.onrender.com/api/v1/patients/')
       ]);
       
       const appointmentsData = await appointmentsRes.json();
@@ -107,7 +107,7 @@ const Appointments = () => {
     
     try {
       // First create patient
-      const patientResponse = await fetch('http://localhost:8000/api/v1/patients/patient', {
+      const patientResponse = await fetch('https://hospitalmanagement-902b.onrender.com/api/v1/patients/patient', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -126,7 +126,7 @@ const Appointments = () => {
       
       if (patientData.status === 'success') {
         // Then create appointment
-        const appointmentResponse = await fetch('http://localhost:8000/api/v1/appointments/appointment', {
+        const appointmentResponse = await fetch('https://hospitalmanagement-902b.onrender.com/api/v1/appointments/appointment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

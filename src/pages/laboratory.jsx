@@ -60,8 +60,15 @@ const Laboratory = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('https://hospitalmanagement-902b.onrender.com/api/v1/hospital/');
-      const data = await response.json();
+      const [hospitalRes, patientsRes] = await Promise.all([
+        fetch('https://hospitalmanagement-902b.onrender.com/api/v1/hospital/'),
+        fetch('https://hospitalmanagement-902b.onrender.com/api/v1/patients/')
+      ]);
+      
+      const [hospitalData, patientsData] = await Promise.all([
+        hospitalRes.json(),
+        patientsRes.json()
+      ]);
       
       const savedTests = localStorage.getItem('labTests');
       const savedOrders = localStorage.getItem('labOrders');
@@ -133,7 +140,7 @@ const Laboratory = () => {
           status: 'Ordered'
         }
       ]);
-      setPatients(savedPatients ? JSON.parse(savedPatients) : data.patients);
+      setPatients(savedPatients ? JSON.parse(savedPatients) : (patientsData.data || []));
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);

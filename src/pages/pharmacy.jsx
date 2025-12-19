@@ -42,14 +42,21 @@ const Pharmacy = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('https://hospitalmanagement-902b.onrender.com/api/v1/pharmacy/');
-      const data = await response.json();
+      const [pharmacyRes, patientsRes] = await Promise.all([
+        fetch('https://hospitalmanagement-902b.onrender.com/api/v1/pharmacy/'),
+        fetch('https://hospitalmanagement-902b.onrender.com/api/v1/patients/')
+      ]);
+      
+      const [pharmacyData, patientsData] = await Promise.all([
+        pharmacyRes.json(),
+        patientsRes.json()
+      ]);
       
       const savedMedicines = localStorage.getItem('hospitalMedicines');
       const savedPatients = localStorage.getItem('hospitalPatients');
       const savedBills = localStorage.getItem('pharmacyBills');
       
-      setMedicines(savedMedicines ? JSON.parse(savedMedicines) : [
+      setMedicines(savedMedicines ? JSON.parse(savedMedicines) : (pharmacyData.data || [
         { id: 'MED301', name: 'Paracetamol 500mg', type: 'Tablet', stock: 500, price: 2 },
         { id: 'MED302', name: 'Amoxicillin 250mg', type: 'Capsule', stock: 200, price: 8 },
         { id: 'MED303', name: 'Crocin Advance', type: 'Tablet', stock: 300, price: 3 },
@@ -65,8 +72,8 @@ const Pharmacy = () => {
         { id: 'MED313', name: 'Eye Drops (Refresh)', type: 'Drops', stock: 60, price: 95 },
         { id: 'MED314', name: 'Aspirin 75mg', type: 'Tablet', stock: 350, price: 1.2 },
         { id: 'MED315', name: 'Pantoprazole 40mg', type: 'Tablet', stock: 120, price: 8.5 }
-      ]);
-      setPatients(savedPatients ? JSON.parse(savedPatients) : data.patients);
+      ]));
+      setPatients(savedPatients ? JSON.parse(savedPatients) : (patientsData.data || []));
       setBills(savedBills ? JSON.parse(savedBills) : [
         {
           id: 'PB001',

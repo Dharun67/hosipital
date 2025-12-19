@@ -43,7 +43,7 @@ const Patients = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/patients/');
+      const response = await fetch('https://hospitalmanagement-902b.onrender.com/api/v1/patients/');
       const data = await response.json();
       setPatients(data.status === 'success' ? data.data : []);
       setLoading(false);
@@ -62,7 +62,7 @@ const Patients = () => {
   const handleAddPatient = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/api/v1/patients/patient', {
+      const response = await fetch('https://hospitalmanagement-902b.onrender.com/api/v1/patients/patient', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -85,7 +85,7 @@ const Patients = () => {
   const handleDeletePatient = async (id) => {
     if (window.confirm('Delete this patient?')) {
       try {
-        const response = await fetch(`http://localhost:8000/api/v1/patients/patient/${id}`, {
+        const response = await fetch(`https://hospitalmanagement-902b.onrender.com/api/v1/patients/patient/${id}`, {
           method: 'DELETE'
         });
         const data = await response.json();
@@ -114,7 +114,7 @@ const Patients = () => {
   const handleUpdatePatient = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/patients/patient/${editingPatient}`, {
+      const response = await fetch(`https://hospitalmanagement-902b.onrender.com/api/v1/patients/patient/${editingPatient}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(patientData)
