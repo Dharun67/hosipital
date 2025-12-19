@@ -16,19 +16,21 @@ const Dashboard = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch('/hospital.json');
-            const jsonData = await response.json();
+            const [patientsRes, doctorsRes, appointmentsRes, staffRes, pharmacyRes, roomsRes] = await Promise.all([
+                fetch('http://localhost:8000/api/v1/patients/'),
+                fetch('http://localhost:8000/api/v1/doctors/'),
+                fetch('http://localhost:8000/api/v1/appointments/'),
+                fetch('http://localhost:8000/api/v1/staff/'),
+                fetch('http://localhost:8000/api/v1/pharmacy/'),
+                fetch('http://localhost:8000/api/v1/rooms/')
+            ]);
             
-            // Load from localStorage if available, otherwise use JSON data
-            const savedPatients = localStorage.getItem('hospitalPatients');
-            const savedDoctors = localStorage.getItem('hospitalDoctors');
-            const savedAppointments = localStorage.getItem('hospitalAppointments');
-            const savedStaff = localStorage.getItem('hospitalStaff');
-            const savedMedicines = localStorage.getItem('hospitalMedicines');
-            const savedPharmacyBills = localStorage.getItem('pharmacyBills');
-            const savedLabTests = localStorage.getItem('labTests');
-            const savedLabOrders = localStorage.getItem('labOrders');
-            const savedSurgeries = localStorage.getItem('hospitalSurgeries');
+            const patientsData = await patientsRes.json();
+            const doctorsData = await doctorsRes.json();
+            const appointmentsData = await appointmentsRes.json();
+            const staffData = await staffRes.json();
+            const pharmacyData = await pharmacyRes.json();
+            const roomsData = await roomsRes.json();
             
             // Default surgery data if none exists
             const defaultSurgeries = [
@@ -89,17 +91,20 @@ const Dashboard = () => {
             ];
             
             const updatedData = {
-                ...jsonData,
-                patients: savedPatients ? JSON.parse(savedPatients) : jsonData.patients,
-                doctors: savedDoctors ? JSON.parse(savedDoctors) : jsonData.doctors,
-                appointments: savedAppointments ? JSON.parse(savedAppointments) : jsonData.appointments,
-                staff: savedStaff ? JSON.parse(savedStaff) : jsonData.staff,
-                pharmacy: savedMedicines ? JSON.parse(savedMedicines) : jsonData.pharmacy,
-                pharmacyBills: savedPharmacyBills ? JSON.parse(savedPharmacyBills) : [],
-                labTests: savedLabTests ? JSON.parse(savedLabTests) : [],
-                labOrders: savedLabOrders ? JSON.parse(savedLabOrders) : [],
-                surgeries: savedSurgeries ? JSON.parse(savedSurgeries) : defaultSurgeries,
-                rooms: localStorage.getItem('hospitalRooms') ? JSON.parse(localStorage.getItem('hospitalRooms')) : jsonData.rooms || []
+                patients: patientsData.status === 'success' ? patientsData.data : [],
+                doctors: doctorsData.status === 'success' ? doctorsData.data : [],
+                appointments: appointmentsData.status === 'success' ? appointmentsData.data : [],
+                staff: staffData.status === 'success' ? staffData.data : [],
+                pharmacy: pharmacyData.status === 'success' ? pharmacyData.data : [],
+                surgeries: defaultSurgeries,
+                rooms: roomsData.status === 'success' ? roomsData.data : [],
+                onlineConsultations: [],
+                pharmacyBills: [],
+                labTests: [],
+                labOrders: [],
+                billing: [],
+                departments: [],
+                emergencies: []
             };
             
             setData(updatedData);

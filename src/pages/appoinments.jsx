@@ -49,17 +49,20 @@ const Appointments = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/hospital.json');
-      const data = await response.json();
+      const [appointmentsRes, doctorsRes, patientsRes] = await Promise.all([
+        fetch('http://localhost:8000/api/v1/appointments/'),
+        fetch('http://localhost:8000/api/v1/doctors/'),
+        fetch('http://localhost:8000/api/v1/patients/')
+      ]);
       
+      const appointmentsData = await appointmentsRes.json();
+      const doctorsData = await doctorsRes.json();
+      const patientsData = await patientsRes.json();
       
-      const savedPatients = localStorage.getItem('hospitalPatients');
-      const savedAppointments = localStorage.getItem('hospitalAppointments');
-      
-      setAppointments(savedAppointments ? JSON.parse(savedAppointments) : data.appointments);
-      setDoctors(data.doctors);
-      setPatients(savedPatients ? JSON.parse(savedPatients) : data.patients);
-      setOnlineConsultations(data.onlineConsultations || []);
+      setAppointments(appointmentsData.status === 'success' ? appointmentsData.data : []);
+      setDoctors(doctorsData.status === 'success' ? doctorsData.data : []);
+      setPatients(patientsData.status === 'success' ? patientsData.data : []);
+      setOnlineConsultations([]);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -99,43 +102,57 @@ const Appointments = () => {
     return `PAT${num}`;
   };
 
-  const handleBookAppointment = (e) => {
+  const handleBookAppointment = async (e) => {
     e.preventDefault();
     
-    const newPatient = {
-      id: generatePatientId(),
-      name: bookingData.name,
-      age: bookingData.age,
-      gender: bookingData.gender,
-      phone: bookingData.phone,
-      address: bookingData.address,
-      bloodGroup: bookingData.bloodGroup,
-      admitted: false,
-      visitDate: new Date().toISOString().split('T')[0]
-    };
-    
-    const newAppointment = {
-      id: generateId(),
-      patientId: newPatient.id,
-      doctorId: bookingData.doctorId,
-      date: bookingData.date,
-      time: bookingData.time,
-      status: 'Scheduled'
-    };
-    
-    const updatedPatients = [...patients, newPatient];
-    const updatedAppointments = [...appointments, newAppointment];
-    
-    setPatients(updatedPatients);
-    setAppointments(updatedAppointments);
-    
-    // Save to localStorage for cross-page sync
-    localStorage.setItem('hospitalPatients', JSON.stringify(updatedPatients));
-    localStorage.setItem('hospitalAppointments', JSON.stringify(updatedAppointments));
-    
-    setBookingData({ name: '', age: '', gender: 'Male', phone: '', address: '', bloodGroup: 'O+', doctorId: '', date: '', time: '' });
-    setShowBookForm(false);
-    window.history.pushState({}, '', '/appointments');
+    try {
+      // First create patient
+      const patientResponse = await fetch('http://localhost:8000/api/v1/patients/patient', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: bookingData.name,
+          age: bookingData.age,
+          gender: bookingData.gender,
+          phone: bookingData.phone,
+          address: bookingData.address,
+          bloodGroup: bookingData.bloodGroup,
+          admitted: false,
+          visitDate: new Date().toISOString().split('T')[0]
+        })
+      });
+      
+      const patientData = await patientResponse.json();
+      
+      if (patientData.status === 'success') {
+        // Then create appointment
+        const appointmentResponse = await fetch('http://localhost:8000/api/v1/appointments/appointment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patientId: patientData.data.id,
+            doctorId: bookingData.doctorId,
+            date: bookingData.date,
+            time: bookingData.time,
+            status: 'Scheduled'
+          })
+        });
+        
+        const appointmentData = await appointmentResponse.json();
+        
+        if (appointmentData.status === 'success') {
+          // Refresh data
+          fetchData();
+          setBookingData({ name: '', age: '', gender: 'Male', phone: '', address: '', bloodGroup: 'O+', doctorId: '', date: '', time: '' });
+          setShowBookForm(false);
+          window.history.pushState({}, '', '/appointments');
+          alert('Appointment booked successfully!');
+        }
+      }
+    } catch (error) {
+      console.error('Error booking appointment:', error);
+      alert('Error booking appointment. Please try again.');
+    }
   };
 
   const handleEditAppointment = (appointment) => {

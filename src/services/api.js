@@ -27,6 +27,13 @@ export const doctorsAPI = {
     method: 'POST',
     body: JSON.stringify(doctor),
   }),
+  update: (id, doctor) => apiCall(`/doctors/doctor/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(doctor),
+  }),
+  delete: (id) => apiCall(`/doctors/doctor/${id}`, {
+    method: 'DELETE',
+  }),
 };
 
 export const patientsAPI = {
@@ -34,6 +41,13 @@ export const patientsAPI = {
   create: (patient) => apiCall('/patients/patient', {
     method: 'POST',
     body: JSON.stringify(patient),
+  }),
+  update: (id, patient) => apiCall(`/patients/patient/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(patient),
+  }),
+  delete: (id) => apiCall(`/patients/patient/${id}`, {
+    method: 'DELETE',
   }),
 };
 
@@ -43,6 +57,13 @@ export const appointmentsAPI = {
     method: 'POST',
     body: JSON.stringify(appointment),
   }),
+  update: (id, appointment) => apiCall(`/appointments/appointment/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(appointment),
+  }),
+  delete: (id) => apiCall(`/appointments/appointment/${id}`, {
+    method: 'DELETE',
+  }),
 };
 
 export const pharmacyAPI = {
@@ -50,5 +71,42 @@ export const pharmacyAPI = {
   create: (medicine) => apiCall('/pharmacy/medicine', {
     method: 'POST',
     body: JSON.stringify(medicine),
+  }),
+  update: (id, medicine) => apiCall(`/pharmacy/medicine/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(medicine),
+  }),
+  delete: (id) => apiCall(`/pharmacy/medicine/${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+export const roomsAPI = {
+  getAll: () => apiCall('/rooms/'),
+  create: (room) => apiCall('/rooms/room', {
+    method: 'POST',
+    body: JSON.stringify(room),
+  }),
+  update: (id, room) => apiCall(`/rooms/room/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(room),
+  }),
+  delete: (id) => apiCall(`/rooms/room/${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+export const staffAPI = {
+  getAll: () => apiCall('/staff/'),
+  create: (staff) => apiCall('/staff/staff', {
+    method: 'POST',
+    body: JSON.stringify(staff),
+  }),
+  update: (id, staff) => apiCall(`/staff/staff/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(staff),
+  }),
+  delete: (id) => apiCall(`/staff/staff/${id}`, {
+    method: 'DELETE',
   }),
 };

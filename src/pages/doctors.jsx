@@ -56,17 +56,20 @@ const Doctors = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/hospital.json');
-      const data = await response.json();
+      const [doctorsRes, appointmentsRes, patientsRes] = await Promise.all([
+        fetch('http://localhost:8000/api/v1/doctors/'),
+        fetch('http://localhost:8000/api/v1/appointments/'),
+        fetch('http://localhost:8000/api/v1/patients/')
+      ]);
       
-      const savedDoctors = localStorage.getItem('hospitalDoctors');
-      const savedAppointments = localStorage.getItem('hospitalAppointments');
-      const savedPatients = localStorage.getItem('hospitalPatients');
+      const doctorsData = await doctorsRes.json();
+      const appointmentsData = await appointmentsRes.json();
+      const patientsData = await patientsRes.json();
       
-      setDoctors(savedDoctors ? JSON.parse(savedDoctors) : data.doctors);
-      setAppointments(savedAppointments ? JSON.parse(savedAppointments) : data.appointments);
-      setOnlineConsultations(data.onlineConsultations || []);
-      setPatients(savedPatients ? JSON.parse(savedPatients) : data.patients);
+      setDoctors(doctorsData.status === 'success' ? doctorsData.data : []);
+      setAppointments(appointmentsData.status === 'success' ? appointmentsData.data : []);
+      setPatients(patientsData.status === 'success' ? patientsData.data : []);
+      setOnlineConsultations([]);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -80,20 +83,24 @@ const Doctors = () => {
     return `DOC${num}`;
   };
 
-  const handleAddDoctor = (e) => {
+  const handleAddDoctor = async (e) => {
     e.preventDefault();
-    const newDoctor = {
-      id: generateDoctorId(),
-      ...doctorData
-    };
-    const updatedDoctors = [...doctors, newDoctor];
-    setDoctors(updatedDoctors);
-    
-    localStorage.setItem('hospitalDoctors', JSON.stringify(updatedDoctors));
-    
-    setDoctorData({ name: '', specialization: '', experience: '', rating: 4.0, available: true, timing: '' });
-    setShowAddForm(false);
-    window.history.pushState({}, '', '/doctors');
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/doctors/doctor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(doctorData)
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        fetchData();
+        setDoctorData({ name: '', specialization: '', experience: '', rating: 4.0, available: true, timing: '' });
+        setShowAddForm(false);
+        window.history.pushState({}, '', '/doctors');
+      }
+    } catch (error) {
+      console.error('Error adding doctor:', error);
+    }
   };
 
   const handleEditDoctor = (doctor) => {

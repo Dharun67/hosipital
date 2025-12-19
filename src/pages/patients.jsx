@@ -43,12 +43,9 @@ const Patients = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/hospital.json');
+      const response = await fetch('http://localhost:8000/api/v1/patients/');
       const data = await response.json();
-      
-      // Load from localStorage if available, otherwise use JSON data
-      const savedPatients = localStorage.getItem('hospitalPatients');
-      setPatients(savedPatients ? JSON.parse(savedPatients) : data.patients);
+      setPatients(data.status === 'success' ? data.data : []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -62,36 +59,47 @@ const Patients = () => {
     return `PAT${num}`;
   };
 
-  const handleAddPatient = (e) => {
+  const handleAddPatient = async (e) => {
     e.preventDefault();
-    const newPatient = {
-      id: generatePatientId(),
-      ...patientData,
-      visitDate: new Date().toISOString().split('T')[0]
-    };
-    const updatedPatients = [...patients, newPatient];
-    setPatients(updatedPatients);
-    
-    // Save to localStorage for cross-page sync
-    localStorage.setItem('hospitalPatients', JSON.stringify(updatedPatients));
-    
-    setPatientData({ name: '', age: '', gender: 'Male', phone: '', address: '', bloodGroup: 'O+', admitted: false });
-    setShowAddForm(false);
-    window.history.pushState({}, '', '/patients');
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/patients/patient', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...patientData,
+          visitDate: new Date().toISOString().split('T')[0]
+        })
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        fetchData();
+        setPatientData({ name: '', age: '', gender: 'Male', phone: '', address: '', bloodGroup: 'O+', admitted: false });
+        setShowAddForm(false);
+        window.history.pushState({}, '', '/patients');
+      }
+    } catch (error) {
+      console.error('Error adding patient:', error);
+    }
   };
 
-  const handleDeletePatient = (id) => {
+  const handleDeletePatient = async (id) => {
     if (window.confirm('Delete this patient?')) {
-      const updatedPatients = patients.filter(p => p.id !== id);
-      setPatients(updatedPatients);
-      
-      // Save to localStorage for cross-page sync
-      localStorage.setItem('hospitalPatients', JSON.stringify(updatedPatients));
+      try {
+        const response = await fetch(`http://localhost:8000/api/v1/patients/patient/${id}`, {
+          method: 'DELETE'
+        });
+        const data = await response.json();
+        if (data.status === 'success') {
+          fetchData();
+        }
+      } catch (error) {
+        console.error('Error deleting patient:', error);
+      }
     }
   };
 
   const handleEditPatient = (patient) => {
-    setEditingPatient(patient.id);
+    setEditingPatient(patient._id);
     setPatientData({
       name: patient.name,
       age: patient.age,
@@ -103,23 +111,28 @@ const Patients = () => {
     });
   };
 
-  const handleUpdatePatient = (e) => {
+  const handleUpdatePatient = async (e) => {
     e.preventDefault();
-    const updatedPatients = patients.map(p => 
-      p.id === editingPatient ? { ...p, ...patientData } : p
-    );
-    setPatients(updatedPatients);
-    
-    // Save to localStorage for cross-page sync
-    localStorage.setItem('hospitalPatients', JSON.stringify(updatedPatients));
-    
-    setEditingPatient(null);
-    setPatientData({ name: '', age: '', gender: 'Male', phone: '', address: '', bloodGroup: 'O+', admitted: false });
+    try {
+      const response = await fetch(`http://localhost:8000/api/v1/patients/patient/${editingPatient}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patientData)
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        fetchData();
+        setEditingPatient(null);
+        setPatientData({ name: '', age: '', gender: 'Male', phone: '', address: '', bloodGroup: 'O+', admitted: false });
+      }
+    } catch (error) {
+      console.error('Error updating patient:', error);
+    }
   };
 
   const filteredPatients = patients.filter(patient => 
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.phone.includes(searchTerm)
   );
 
@@ -184,8 +197,8 @@ const Patients = () => {
             </thead>
             <tbody>
               {(showOutpatients ? outpatients : filteredPatients).map(patient => (
-                <tr key={patient.id}>
-                  <td>{patient.id}</td>
+                <tr key={patient._id}>
+                  <td>{patient._id}</td>
                   <td>{patient.name}</td>
                   <td>{patient.age}</td>
                   <td>{patient.gender}</td>
@@ -200,7 +213,7 @@ const Patients = () => {
                   <td>
                     <button className="btn-view" onClick={() => setViewingPatient(patient)}>View</button>
                     <button className="btn-edit" onClick={() => handleEditPatient(patient)}>Edit</button>
-                    <button className="btn-delete" onClick={() => handleDeletePatient(patient.id)}>Delete</button>
+                    <button className="btn-delete" onClick={() => handleDeletePatient(patient._id)}>Delete</button>
                   </td>
                 </tr>
               ))}
